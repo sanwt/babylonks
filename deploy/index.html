@@ -16,17 +16,19 @@
         // Create the Babylon.js engine
         const engine = new BABYLON.Engine(canvas, true);
         
-// Unlock audio on first user interaction
-const unlockAudio = () => {
-    const silentSound = new BABYLON.Sound("unlock", null, scene, null, {
-        autoplay: false
-    });
-    silentSound.play(); // Unlocks audio context
-    window.removeEventListener("click", unlockAudio);
-};
+// Disable the default audio unlock button
+engine.audioEngine.useCustomUnlockedButton = true;
 
-// Add event listener to unlock audio when the user clicks anywhere
-window.addEventListener("click", unlockAudio);
+// Unlock audio on first user interaction.
+window.addEventListener(
+  "click",
+  () => {
+    if (!engine.audioEngine.unlocked) {
+      engine.audioEngine.unlock();
+    }
+  },
+  { once: true },
+);
 
         // Create a basic scene
 const createScene = function () {
