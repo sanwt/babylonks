@@ -34,67 +34,27 @@
         const canvas = document.getElementById("renderCanvas"); // Get the canvas element
         const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
 
-	if (engine.audioEngine && engine.audioEngine.audioContext.state === "suspended") {
-    		engine.audioEngine.audioContext.resume();
-	}
+	//if (engine.audioEngine && engine.audioEngine.audioContext.state === "suspended") {
+    	//	engine.audioEngine.audioContext.resume();
+	//}
 
-const createScene = function () {
-    const scene = new BABYLON.Scene(engine);
+var createScene = function () {
+    var scene = new BABYLON.Scene(engine);
+    var camera = new BABYLON.FreeCamera("FreeCamera", new BABYLON.Vector3(0, 0, 0), scene);
 
-    // Create a full-screen background
-    //const background = new BABYLON.Layer("background", "background.jpg", scene, true);
-    
-    // Create a camera
-    const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 4, Math.PI / 4, 5, BABYLON.Vector3.Zero(), scene);
-    camera.attachControl(canvas, true);
-    
-    // Create a light
-    const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
-    light.intensity = 1.0;
-    
-    // Create a box (cube)
-    const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
-    
-    // Create materials for each face
-    const materials = [];
-    for (let i = 0; i < 6; i++) {
-        const mat = new BABYLON.StandardMaterial(`mat${i}`, scene);
-        mat.diffuseTexture = new BABYLON.Texture(`face${i}.jpg`, scene); // Ensure these image files exist
-        materials.push(mat);
-    }
-    
-    // Apply materials to cube faces
-    const multiMaterial = new BABYLON.MultiMaterial("multiMat", scene);
-    multiMaterial.subMaterials = materials;
-    box.material = multiMaterial;
-    
-    // Assign materials to cube faces
-    box.subMeshes = [];
-    for (let i = 0; i < 6; i++) {
-        box.subMeshes.push(new BABYLON.SubMesh(i, 0, box.getTotalVertices(), i * 6, 6, box));
-    }
-    
-    // Load sounds for each face
-    const sounds = [];
-    for (let i = 0; i < 6; i++) {
-        sounds[i] = new BABYLON.Sound(`sound${i}`, `sound${i}.mp3`, scene);
-    }
-    
-    // Handle click events
-    scene.onPointerDown = function (evt, pickResult) {
-        if (pickResult.hit && pickResult.pickedMesh === box) {
-            const pickedFace = Math.floor(pickResult.subMeshId);
-            if (sounds[pickedFace]) {
-                sounds[pickedFace].play();
-            }
+    // Load the sound and play it automatically once ready
+    const audioObject = new BABYLON.Sound("Violons", "hello.mp3", scene, null, { loop: true, autoplay: true });
+
+    // Disable the default audio unlock button
+    BABYLON.Engine.audioEngine.useCustomUnlockedButton = true;
+
+    // Unlock audio on first user interaction.
+    window.addEventListener('click', () => {
+        if(!BABYLON.Engine.audioEngine.unlocked){
+            BABYLON.Engine.audioEngine.unlock();
         }
-    };
-    
-    // Create an animation loop
-    scene.onBeforeRenderObservable.add(() => {
-        box.rotation.y += 0.01; // Rotate around the Y-axis
-    });
-    
+    }, { once: true });
+
     return scene;
 };
 
