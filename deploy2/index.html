@@ -6,8 +6,6 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
         <title>Babylon Template</title>
 
-
-
         <style>
             html, body {
                 overflow: hidden;
@@ -24,10 +22,6 @@
             }
         </style>
 
-        <!-- Babylon.js -->
-        <script src="https://preview.babylonjs.com/gltf_validator.js"></script>
-        <script src="https://preview.babylonjs.com/babylon.js"></script>
-        <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.js"></script>
         <script src="https://cdn.babylonjs.com/babylon.js"></script>
 
     </head>
@@ -43,6 +37,11 @@
 
 const createScene = function () {
     const scene = new BABYLON.Scene(engine);
+
+
+if (BABYLON.Engine.audioEngine && BABYLON.Engine.audioEngine.audioContext.state === "suspended") {
+    BABYLON.Engine.audioEngine.audioContext.resume();
+}
 
     // Create a full-screen background
     const background = new BABYLON.Layer("background", "background.jpg", scene, true);
