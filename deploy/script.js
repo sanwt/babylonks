@@ -24,7 +24,7 @@ material.diffuseColor = new BABYLON.Color3(1, 0, 0); // Red color
 square.material = material;
 
 // Load a sound
-const sound = new BABYLON.Sound("clickSound", "https://www.soundjay.com/button/beep-07.wav", scene);
+const sound = new BABYLON.Sound("clickSound", "https://sanwt.github.io/babylonks/deploy/hello.mp3", scene);
 
 // Add click event
 square.actionManager = new BABYLON.ActionManager(scene);
