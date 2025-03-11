@@ -34,10 +34,6 @@
         const canvas = document.getElementById("renderCanvas"); // Get the canvas element
         const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
 
-if (BABYLON.Engine.audioEngine && BABYLON.Engine.audioEngine.audioContext.state === "suspended") {
-    BABYLON.Engine.audioEngine.audioContext.resume();
-}
-
 const createScene = function () {
     const scene = new BABYLON.Scene(engine);
 
