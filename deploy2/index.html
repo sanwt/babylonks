@@ -34,36 +34,66 @@
         const canvas = document.getElementById("renderCanvas"); // Get the canvas element
         const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
 
-        const createScene = function () {
-            // This creates a basic Babylon Scene object (non-mesh)
-            const scene = new BABYLON.Scene(engine);
 
-            // This creates and positions a free camera (non-mesh)
-            const camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
+const createScene = function () {
+    const scene = new BABYLON.Scene(engine);
 
-            // This targets the camera to scene origin
-            camera.setTarget(BABYLON.Vector3.Zero());
-
-            // This attaches the camera to the canvas
-            camera.attachControl(canvas, true);
-
-            // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
-            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-
-            // Default intensity is 1. Let's dim the light a small amount
-            light.intensity = 0.7;
-
-            // Our built-in 'sphere' shape.
-            const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
-
-            // Move the sphere upward 1/2 its height
-            sphere.position.y = 1;
-
-            // Our built-in 'ground' shape.
-            const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
-
-            return scene;
-        };
+    // Create a full-screen background
+    const background = new BABYLON.Layer("background", "background.jpg", scene, true);
+    
+    // Create a camera
+    const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 4, Math.PI / 4, 5, BABYLON.Vector3.Zero(), scene);
+    camera.attachControl(canvas, true);
+    
+    // Create a light
+    const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
+    light.intensity = 0.7;
+    
+    // Create a box (cube)
+    const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
+    
+    // Create materials for each face
+    const materials = [];
+    for (let i = 0; i < 6; i++) {
+        const mat = new BABYLON.StandardMaterial(`mat${i}`, scene);
+        mat.diffuseTexture = new BABYLON.Texture(`face${i}.jpg`, scene); // Ensure these image files exist
+        materials.push(mat);
+    }
+    
+    // Apply materials to cube faces
+    const multiMaterial = new BABYLON.MultiMaterial("multiMat", scene);
+    multiMaterial.subMaterials = materials;
+    box.material = multiMaterial;
+    
+    // Assign materials to cube faces
+    box.subMeshes = [];
+    for (let i = 0; i < 6; i++) {
+        box.subMeshes.push(new BABYLON.SubMesh(i, 0, box.getTotalVertices(), i * 6, 6, box));
+    }
+    
+    // Load sounds for each face
+    const sounds = [];
+    for (let i = 0; i < 6; i++) {
+        sounds[i] = new BABYLON.Sound(`sound${i}`, `https://sanwt.github.io/babylonks/deploy/hello.mp3`, scene);
+    }
+    
+    // Handle click events
+    scene.onPointerDown = function (evt, pickResult) {
+        if (pickResult.hit && pickResult.pickedMesh === box) {
+            const pickedFace = Math.floor(pickResult.subMeshId);
+            if (sounds[pickedFace]) {
+                sounds[pickedFace].play();
+            }
+        }
+    };
+    
+    // Create an animation loop
+    scene.onBeforeRenderObservable.add(() => {
+        box.rotation.y += 0.01; // Rotate around the Y-axis
+    });
+    
+    return scene;
+};
 
         const scene = createScene(); //Call the createScene function
 
