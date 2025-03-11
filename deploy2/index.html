@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Babylon.js Background Sound</title>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
+</head>
+<body>
+    <canvas id="renderCanvas" touch-action="none"></canvas>
+    <script>
+        function createScene(engine, canvas) {
+            const scene = new BABYLON.Scene(engine);
+            
+            const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 2, Math.PI / 2, 10, BABYLON.Vector3.Zero(), scene);
+            camera.attachControl(canvas, true);
+            
+            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+            
+            // Load and play background sound
+            const backgroundMusic = new BABYLON.Sound("BackgroundMusic", "https://www.babylonjs-playground.com/sounds/violons11.wav", scene, null, {
+                loop: true,
+                autoplay: true,
+                volume: 0.5
+            });
+            
+            return scene;
+        }
+
+        window.addEventListener("DOMContentLoaded", function () {
+            const canvas = document.getElementById("renderCanvas");
+            const engine = new BABYLON.Engine(canvas, true);
+            const scene = createScene(engine, canvas);
+            
+            engine.runRenderLoop(function () {
+                scene.render();
+            });
+
+            window.addEventListener("resize", function () {
+                engine.resize();
+            });
+        });
+    </script>
+</body>
+</html>
