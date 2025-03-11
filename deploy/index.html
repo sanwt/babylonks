@@ -20,13 +20,29 @@
 const createScene = function () {
     const scene = new BABYLON.Scene(engine);
     
-    // Unlock audio on first user interaction
-    const unlockAudio = () => {
-        const silentSound = new BABYLON.Sound("unlock", null, scene, null, { autoplay: false });
-        silentSound.play();
-        window.removeEventListener("click", unlockAudio);
-    };
-    window.addEventListener("click", unlockAudio);
+// Unlock audio on first user interaction
+const unlockAudio = () => {
+    if (!BABYLON.Engine.audioEngine) {
+        BABYLON.Engine.audioEngine = new BABYLON.AudioEngine();
+    }
+    
+    const silentSound = new BABYLON.Sound("unlock", null, scene, null, {
+        autoplay: false
+    });
+
+    // Use Web Audio API directly for better unlocking
+    const context = BABYLON.Engine.audioEngine.audioContext;
+    const buffer = context.createBuffer(1, 1, 22050);
+    const source = context.createBufferSource();
+    source.buffer = buffer;
+    source.connect(context.destination);
+    source.start(0);
+
+    window.removeEventListener("pointerdown", unlockAudio);
+};
+
+// Use 'pointerdown' instead of 'click' (better compatibility)
+window.addEventListener("pointerdown", unlockAudio);
 
     // Create a full-screen background
     const background = new BABYLON.Layer("background", "background.jpg", scene, true);
