@@ -77,7 +77,7 @@ const createScene = function () {
     // Load sounds for each face
     const sounds = [];
     for (let i = 0; i < 6; i++) {
-        sounds[i] = new BABYLON.Sound(`sound${i}`, `https://sanwt.github.io/babylonks/deploy/hello.mp3`, scene);
+        sounds[i] = new BABYLON.Sound(`sound${i}`, `sound${i}.mp3`, scene);
     }
     
     // Handle click events
