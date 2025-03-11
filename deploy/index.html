@@ -1,117 +1,82 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello World - Babylon.js</title>
-    <script src="https://cdn.babylonjs.com/babylon.js"></script>
-</head>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+        <title>Tutorial 3 - Audio in Babylon js</title>
+
+        <!-- Babylon.js -->
+        <script src="https://preview.babylonjs.com/gltf_validator.js"></script>
+        <script src="https://preview.babylonjs.com/babylon.js"></script>
+        <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.js"></script>
+     
+        <style>
+            html, body {overflow: hidden; width: 100%;
+                height: 100%; margin: 0; padding: 0; }
+
+            #renderCanvas { width: 100%; height: 100%;
+                touch-action: none; }
+        </style>
+    </head>
 <body>
-    <canvas id="renderCanvas" touch-action="none" style="width: 100vw; height: 100vh;"></canvas>
-    
-    <script>
-        // Get the canvas element
-        const canvas = document.getElementById("renderCanvas");
-        
-        // Create the Babylon.js engine
-        const engine = new BABYLON.Engine(canvas, true);
-        
-        // Create a basic scene
-const createScene = function () {
-    const scene = new BABYLON.Scene(engine);
-    
-// Unlock audio on first user interaction
-const unlockAudio = () => {
-    if (!BABYLON.Engine.audioEngine) {
-        BABYLON.Engine.audioEngine = new BABYLON.AudioEngine();
-    }
-    
-    const silentSound = new BABYLON.Sound("unlock", null, scene, null, {
-        autoplay: false
-    });
+  <canvas id="renderCanvas"></canvas>
+  <script>
+    var canvas = document.getElementById("renderCanvas");
 
-    // Use Web Audio API directly for better unlocking
-    const context = BABYLON.Engine.audioEngine.audioContext;
-    const buffer = context.createBuffer(1, 1, 22050);
-    const source = context.createBufferSource();
-    source.buffer = buffer;
-    source.connect(context.destination);
-    source.start(0);
+    var createScene = function() {
+        // Create scene
 
-    window.removeEventListener("pointerdown", unlockAudio);
-};
+      	var scene = new BABYLON.Scene(engine);
+        // Default Environment
+        var environment =  scene.createDefaultEnvironment({ 
+            createSkybox: false,
+            createGround: true,
+            groundSize: 1000,
+            groundColor: BABYLON.Color3.Green(),
+            enableGroundShadow: true, 
+            groundYBias: 1 
+        });
 
-// Use 'pointerdown' instead of 'click' (better compatibility)
-window.addEventListener("pointerdown", unlockAudio);
+        var skyMaterial = new BABYLON.StandardMaterial("skybox", scene);
+            skyMaterial.backFaceCulling = false;
+            skyMaterial.reflectionTexture = new BABYLON.CubeTexture("textures/skybox", scene);
+            skyMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+            skyMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
+            skyMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+        var skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size:1000.0}, scene);
+        skybox.material = skyMaterial;
 
-    // Create a full-screen background
-    const background = new BABYLON.Layer("background", "background.jpg", scene, true);
-    
-    // Create a camera
-    const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 4, Math.PI / 4, 5, BABYLON.Vector3.Zero(), scene);
-    camera.attachControl(canvas, true);
-    
-    // Create a light
-    const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
-    light.intensity = 0.7;
-    
-    // Create a box (cube)
-    const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
-    
-    // Create materials for each face
-    const materials = [];
-    for (let i = 0; i < 6; i++) {
-        const mat = new BABYLON.StandardMaterial(`mat${i}`, scene);
-        mat.diffuseTexture = new BABYLON.Texture(`face${i}.jpg`, scene); // Ensure these image files exist
-        materials.push(mat);
-    }
-    
-    // Apply materials to cube faces
-    const multiMaterial = new BABYLON.MultiMaterial("multiMat", scene);
-    multiMaterial.subMaterials = materials;
-    box.material = multiMaterial;
-    
-    // Assign materials to cube faces
-    box.subMeshes = [];
-    for (let i = 0; i < 6; i++) {
-        box.subMeshes.push(new BABYLON.SubMesh(i, 0, box.getTotalVertices(), i * 6, 6, box));
-    }
-    
-    // Load sounds for each face
-    const sounds = [];
-    for (let i = 0; i < 6; i++) {
-        sounds[i] = new BABYLON.Sound(`sound${i}`, `https://sanwt.github.io/babylonks/deploy/hello.mp3`, scene);
-    }
-    
-    // Handle click events
-    scene.onPointerDown = function (evt, pickResult) {
-        if (pickResult.hit && pickResult.pickedMesh === box) {
-            const pickedFace = Math.floor(pickResult.subMeshId);
-            if (sounds[pickedFace]) {
-                sounds[pickedFace].play();
-            }
-        }
-    };
-    
-    // Create an animation loop
-    scene.onBeforeRenderObservable.add(() => {
-        box.rotation.y += 0.01; // Rotate around the Y-axis
-    });
-    
+     // A little mood music
+     var music = new BABYLON.Sound("music", "hello.mp3", scene, soundReady, {loop: true });
+
+     function soundReady() {
+         music.play();
+     }
+
+
+       // Enable VR
+       var vrHelper = scene.createDefaultVRExperience({createDeviceOrientationCamera:false});
+       vrHelper.enableTeleportation({floorMeshes: [environment.ground]});
+
+       var building = BABYLON.SceneLoader.Append("./", "vrchapel.glb", scene, function (meshes) {    
+       scene.createDefaultCameraOrLight(true, true, true);
+       });         
     return scene;
-};
-        
-        const scene = createScene();
-        
-        // Run the render loop
-        engine.runRenderLoop(() => {
-            scene.render();
-        });
-        
-        // Resize event handler
-        window.addEventListener("resize", () => {
-            engine.resize();
-        });
-    </script>
+    };
+               
+    var engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+    var scene = createScene();
+
+    engine.runRenderLoop(function () {
+        if (scene) {
+           scene.render();
+        }
+    });
+
+    // Resize
+    window.addEventListener("resize", function () {
+         engine.resize();
+     });
+  </script>
 </body>
 </html>
