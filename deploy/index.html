@@ -46,12 +46,12 @@ var createScene = function () {
     const audioObject = new BABYLON.Sound("Violons", "hello.mp3", scene, null, { loop: true, autoplay: true });
 
     // Disable the default audio unlock button
-    BABYLON.Engine.audioEngine.useCustomUnlockedButton = true;
+    BABYLON.Engine.useCustomUnlockedButton = true;
 
     // Unlock audio on first user interaction.
     window.addEventListener('click', () => {
-        if(!BABYLON.Engine.audioEngine.unlocked){
-            BABYLON.Engine.audioEngine.unlock();
+        if(!BABYLON.Engine.unlocked){
+            BABYLON.Engine.unlock();
         }
     }, { once: true });
 
