@@ -1,82 +1,116 @@
 <!DOCTYPE html>
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+        <title>Babylon Template</title>
 
-        <title>Tutorial 3 - Audio in Babylon js</title>
-
-        <!-- Babylon.js -->
-        <script src="https://preview.babylonjs.com/gltf_validator.js"></script>
-        <script src="https://preview.babylonjs.com/babylon.js"></script>
-        <script src="https://preview.babylonjs.com/loaders/babylonjs.loaders.js"></script>
-     
         <style>
-            html, body {overflow: hidden; width: 100%;
-                height: 100%; margin: 0; padding: 0; }
+            html, body {
+                overflow: hidden;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
 
-            #renderCanvas { width: 100%; height: 100%;
-                touch-action: none; }
+            #renderCanvas {
+                width: 100%;
+                height: 100%;
+                touch-action: none;
+            }
         </style>
+
+        <script src="https://cdn.babylonjs.com/babylon.js"></script>
+
     </head>
-<body>
-  <canvas id="renderCanvas"></canvas>
-  <script>
-    var canvas = document.getElementById("renderCanvas");
 
-    var createScene = function() {
-        // Create scene
+   <body>
 
-      	var scene = new BABYLON.Scene(engine);
-        // Default Environment
-        var environment =  scene.createDefaultEnvironment({ 
-            createSkybox: false,
-            createGround: true,
-            groundSize: 1000,
-            groundColor: BABYLON.Color3.Green(),
-            enableGroundShadow: true, 
-            groundYBias: 1 
+	<canvas id="renderCanvas"></canvas>
+
+	<script>
+
+        const canvas = document.getElementById("renderCanvas"); // Get the canvas element
+        const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+
+	if (engine.audioEngine && engine.audioEngine.audioContext.state === "suspended") {
+    		engine.audioEngine.audioContext.resume();
+	}
+
+const createScene = function () {
+    const scene = new BABYLON.Scene(engine);
+
+    // Create a full-screen background
+    const background = new BABYLON.Layer("background", "background.jpg", scene, true);
+    
+    // Create a camera
+    const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 4, Math.PI / 4, 5, BABYLON.Vector3.Zero(), scene);
+    camera.attachControl(canvas, true);
+    
+    // Create a light
+    const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), scene);
+    light.intensity = 1.0;
+    
+    // Create a box (cube)
+    const box = BABYLON.MeshBuilder.CreateBox("box", { size: 1 }, scene);
+    
+    // Create materials for each face
+    const materials = [];
+    for (let i = 0; i < 6; i++) {
+        const mat = new BABYLON.StandardMaterial(`mat${i}`, scene);
+        mat.diffuseTexture = new BABYLON.Texture(`face${i}.jpg`, scene); // Ensure these image files exist
+        materials.push(mat);
+    }
+    
+    // Apply materials to cube faces
+    const multiMaterial = new BABYLON.MultiMaterial("multiMat", scene);
+    multiMaterial.subMaterials = materials;
+    box.material = multiMaterial;
+    
+    // Assign materials to cube faces
+    box.subMeshes = [];
+    for (let i = 0; i < 6; i++) {
+        box.subMeshes.push(new BABYLON.SubMesh(i, 0, box.getTotalVertices(), i * 6, 6, box));
+    }
+    
+    // Load sounds for each face
+    const sounds = [];
+    for (let i = 0; i < 6; i++) {
+        sounds[i] = new BABYLON.Sound(`sound${i}`, `sound${i}.mp3`, scene);
+    }
+    
+    // Handle click events
+    scene.onPointerDown = function (evt, pickResult) {
+        if (pickResult.hit && pickResult.pickedMesh === box) {
+            const pickedFace = Math.floor(pickResult.subMeshId);
+            if (sounds[pickedFace]) {
+                sounds[pickedFace].play();
+            }
+        }
+    };
+    
+    // Create an animation loop
+    scene.onBeforeRenderObservable.add(() => {
+        box.rotation.y += 0.01; // Rotate around the Y-axis
+    });
+    
+    return scene;
+};
+
+        const scene = createScene(); //Call the createScene function
+
+        // Register a render loop to repeatedly render the scene
+        engine.runRenderLoop(function () {
+                scene.render();
         });
 
-        //var skyMaterial = new BABYLON.StandardMaterial("skybox", scene);
-        //    skyMaterial.backFaceCulling = false;
-        //    skyMaterial.reflectionTexture = new BABYLON.CubeTexture("textures/skybox", scene);
-        //    skyMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
-        //    skyMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);
-        //    skyMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
-        //var skybox = BABYLON.MeshBuilder.CreateBox("skyBox", {size:1000.0}, scene);
-        //skybox.material = skyMaterial;
+        // Watch for browser/canvas resize events
+        window.addEventListener("resize", function () {
+                engine.resize();
+        });
+	</script>
 
-     // A little mood music
-     var music = new BABYLON.Sound("music", "hello.mp3", scene, soundReady, {loop: true });
+   </body>
 
-     function soundReady() {
-         music.play();
-     }
-
-
-       // Enable VR
-       //var vrHelper = scene.createDefaultVRExperience({createDeviceOrientationCamera:false});
-       //vrHelper.enableTeleportation({floorMeshes: [environment.ground]});
-
-       //var building = BABYLON.SceneLoader.Append("./", "vrchapel.glb", scene, function (meshes) {    
-       //scene.createDefaultCameraOrLight(true, true, true);
-       });         
-    return scene;
-    };
-               
-    var engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
-    var scene = createScene();
-
-    engine.runRenderLoop(function () {
-        if (scene) {
-           scene.render();
-        }
-    });
-
-    // Resize
-    window.addEventListener("resize", function () {
-         engine.resize();
-     });
-  </script>
-</body>
 </html>
