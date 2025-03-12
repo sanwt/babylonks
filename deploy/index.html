@@ -1,76 +1,35 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-        <title>Babylon Template</title>
-
-        <style>
-            html, body {
-                overflow: hidden;
-                width: 100%;
-                height: 100%;
-                margin: 0;
-                padding: 0;
-            }
-
-            #renderCanvas {
-                width: 100%;
-                height: 100%;
-                touch-action: none;
-            }
-        </style>
-
-        <script src="https://cdn.babylonjs.com/babylon.js"></script>
-
-    </head>
+<!doctype html>
+<html>
+   <head>
+      <meta charset = "utf-8">
+      <title>BabylonJs - Basic Scene- Playing sounds and music</title>
+      <script src = "babylon.js"></script>
+      <style>
+         canvas {width: 100%; height: 100%;}
+      </style>
+   </head>
 
    <body>
-
-	<canvas id="renderCanvas"></canvas>
-
-	<script>
-
-        const canvas = document.getElementById("renderCanvas"); // Get the canvas element
-        const engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
-
-	//if (engine.audioEngine && engine.audioEngine.audioContext.state === "suspended") {
-    	//	engine.audioEngine.audioContext.resume();
-	//}
-
-var createScene = function () {
-    var scene = new BABYLON.Scene(engine);
-    var camera = new BABYLON.FreeCamera("FreeCamera", new BABYLON.Vector3(0, 0, 0), scene);
-
-    // Load the sound and play it automatically once ready
-    const audioObject = new BABYLON.Sound("Violons", "sounds/OpenHH Emerald 2.wav", scene, null, { loop: true, autoplay: true });
-
-    // Disable the default audio unlock button
-    BABYLON.Engine.useCustomUnlockedButton = true;
-
-    // Unlock audio on first user interaction.
-    window.addEventListener('click', () => {
-        if(!BABYLON.Engine.unlocked){
-            BABYLON.Engine.unlock();
-        }
-    }, { once: true });
-
-    return scene;
-};
-
-        const scene = createScene(); //Call the createScene function
-
-        // Register a render loop to repeatedly render the scene
-        engine.runRenderLoop(function () {
-                scene.render();
-        });
-
-        // Watch for browser/canvas resize events
-        window.addEventListener("resize", function () {
-                engine.resize();
-        });
-	</script>
-
+      <canvas id = "renderCanvas"></canvas>
+      <script type = "text/javascript">
+         var canvas = document.getElementById("renderCanvas");
+         var engine = new BABYLON.Engine(canvas, true);
+         var createScene  = function() {
+            var scene = new BABYLON.Scene(engine);
+            scene.clearColor = new BABYLON.Color3(0, 1, 0);
+            
+            var camera = new BABYLON.ArcRotateCamera("Camera", 1, 0.8, 10, new BABYLON.Vector3(0, 0, 0), scene);
+            camera.attachControl(canvas, true)
+            
+            var music = new BABYLON.Sound(
+               "sound", "https://sanwt.github.io/babylonks/deploy/sounds/OpenHH Emerald 2.wav", scene, function callback() { setTimeout(function() {music.play();}, 0)});
+            return scene;
+         };
+         var scene = createScene();
+         engine.runRenderLoop(function() {
+            scene.render();
+         });
+      </script>
    </body>
-
 </html>
+
