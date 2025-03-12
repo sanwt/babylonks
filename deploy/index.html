@@ -43,7 +43,7 @@ var createScene = function () {
     var camera = new BABYLON.FreeCamera("FreeCamera", new BABYLON.Vector3(0, 0, 0), scene);
 
     // Load the sound and play it automatically once ready
-    const audioObject = new BABYLON.Sound("Violons", "hello.mp3", scene, null, { loop: true, autoplay: true });
+    const audioObject = new BABYLON.Sound("Violons", "sounds/OpenHH Emerald 2.wav", scene, null, { loop: true, autoplay: true });
 
     // Disable the default audio unlock button
     BABYLON.Engine.useCustomUnlockedButton = true;
